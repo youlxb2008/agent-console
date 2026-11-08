@@ -1,0 +1,79 @@
+# ============================================================
+# 生产环境 profile：MySQL（连接信息经 DB_URL 等环境变量注入）
+# 部署方式：java -jar app.jar --spring.profiles.active=prod
+# 或：-Dspring.profiles.active=prod
+# DDL 管理：AutoDDL 自动同步（与 dev 环境一致，改 Entity 后重启即可）
+# ============================================================
+spring:
+  cache:
+    type: redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+  # ============================================================
+  # 数据源（dynamic-datasource 格式，与 dev 完全一致）
+  # ============================================================
+  # 多数据源扩展：在 datasource 下新增 secondary / tertiary 即可
+  # 切换数据源：@DS("secondary") 注解
+  datasource:
+    dynamic:
+      primary: primary
+      # 严格匹配模式：未配置的数据源名会抛异常（防止误用）
+      strict: false
+      # p6spy：关闭 SQL 打印（生产环境不应打印 SQL 日志）
+      # lazy：懒加载，启动时不创建连接池，首次查询才创建
+      p6spy: false
+      lazy: true
+      datasource:
+        # MySQL 主数据源
+        # 连接信息可通过环境变量覆盖：DB_USER / DB_PASSWORD / DB_URL
+        primary:
+          username: ${DB_USER:agent_console}
+          password: ${DB_PASSWORD:changeme}
+          url: ${DB_URL:jdbc:mysql://localhost:3306/agent_console?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8}
+          driver-class-name: com.mysql.cj.jdbc.Driver
+
+      # Druid 监控配置（连接池 + 监控页）
+      druid:
+        validation-query: select 1
+        # 监控页 Servlet（访问 http://localhost:8000/druid/index.html）
+        # 账号：admin / 123456（建议通过环境变量覆盖）
+        stat-view-servlet:
+          enabled: true
+          login-username: ${DRUID_USER:admin}
+          login-password: ${DRUID_PASSWORD:123456}
+          # IP 白名单（生产建议限制为运维机网段）
+          # allow: 127.0.0.1
+          allow:
+        # Web 监控 Filter（统计 URL / SQL）
+        web-stat-filter:
+          enabled: true
+
+# 生产环境关闭敏感端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+# 数据根目录（生产环境，可通过环境变量 DATA_ROOT 覆盖）
+web:
+  data-root: ${DATA_ROOT:/data/agent-console}
+
+# 笔记文件系统根目录（契约 data-model.md §5.3，env NOTES_ROOT 覆盖，容器内 /data/notes）
+notes:
+  root: ${NOTES_ROOT:/data/notes}
+
+# 目标详情文件系统根目录（M4.1，env OBJECTIVES_ROOT 覆盖，容器内 /data/objectives）
+objectives:
+  root: ${OBJECTIVES_ROOT:/data/objectives}
+
+# 台账长正文文件系统根目录（M4.2，env LEDGER_ROOT 覆盖，容器内 /data/ledger；>500 字才落文件）
+ledger:
+  root: ${LEDGER_ROOT:/data/ledger}

@@ -1,0 +1,377 @@
+@import './variables.css';
+
+/**
+ * 全局通用样式
+ *
+ * 包含：基础重置、滚动条、布局类（content-box / content / container / pagination / crumbs）
+ * 对齐 NodeAdmin 风格，保留 管理端 独有的工具类
+ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app,
+.wrapper {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, 'microsoft yahei', arial, STHeiTi, sans-serif;
+  background: var(--na-bg-page);
+  color: var(--na-text-primary);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* ===== 通用滚动条 ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--na-border-base);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--na-text-placeholder);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ===== 主内容区布局 ===== */
+.content-box {
+  position: absolute;
+  left: var(--na-sidebar-width);
+  right: 0;
+  top: var(--na-header-height);
+  bottom: 0;
+  padding-bottom: 30px;
+  transition: left 0.3s ease-in-out;
+  background: var(--na-bg-page);
+}
+
+.content {
+  width: auto;
+  height: 100%;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.content-collapse {
+  left: var(--na-sidebar-collapse-width);
+}
+
+/* ===== 通用卡片容器 ===== */
+.container {
+  padding: 20px;
+  background: var(--na-bg-container);
+  border: 1px solid var(--na-border-lighter);
+  border-radius: 6px;
+}
+
+/* ===== 面包屑 ===== */
+.crumbs {
+  margin: 10px 0;
+}
+
+/* ===== 分页 ===== */
+.pagination {
+  margin: 20px 0;
+  text-align: right;
+}
+
+/* ===== 表格 hover 效果 ===== */
+.el-table tr:hover > td {
+  background: var(--na-bg-hover) !important;
+}
+
+/* ===== 折叠侧边栏 hover 弹层（所有模式） ===== */
+/* 弹层 left 由 popperStyle 动态设置（等于 sidebar-collapse 宽度 - 6px），让弹层紧贴折叠菜单右边缘
+   这里负责深色背景 + 圆角 + 阴影，与 sidebar 风格一致 */
+.sidebar-menu-popper {
+  background: var(--na-bg-sidebar) !important;
+  border: 1px solid var(--na-border-sidebar) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+  min-width: 180px !important;
+  overflow: hidden !important; /* 让子项圆角不会溢出外层 */
+}
+
+.sidebar-menu-popper .el-menu {
+  background: transparent !important;
+  border-right: none !important;
+  border-radius: 0 !important; /* 去掉内层菜单自带圆角，避免双层框 */
+  padding: 0 !important;
+}
+
+.sidebar-menu-popper .el-menu-item,
+.sidebar-menu-popper .el-sub-menu__title {
+  background: transparent !important;
+  color: var(--na-text-sidebar) !important;
+  height: 38px !important;
+  line-height: 38px !important;
+  margin: 2px 6px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  transition: var(--na-transition-fast) !important;
+}
+
+.sidebar-menu-popper .el-menu-item:hover,
+.sidebar-menu-popper .el-sub-menu__title:hover {
+  background: var(--na-bg-sidebar-hover) !important;
+  color: var(--na-text-sidebar-active) !important;
+}
+
+.sidebar-menu-popper .el-menu-item.is-active {
+  background: var(--na-bg-sidebar-active) !important;
+  color: var(--na-text-sidebar-active) !important;
+  font-weight: 500;
+}
+
+/* 弹层菜单图标尺寸 */
+.sidebar-menu-popper .menu-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px !important;
+}
+
+/* ===== 折叠侧边栏 hover 弹层（窄版/紧凑模式） ===== */
+.sidebar-menu-popper-compact {
+  min-width: 160px !important;
+}
+
+.sidebar-menu-popper-compact .el-menu {
+  min-width: 160px !important;
+}
+
+.sidebar-menu-popper-compact .el-menu-item,
+.sidebar-menu-popper-compact .el-sub-menu__title {
+  height: 34px !important;
+  line-height: 34px !important;
+  font-size: 12px;
+  padding: 0 12px !important;
+}
+
+/* 窄版覆盖宽版图标尺寸 */
+.sidebar-menu-popper-compact .menu-icon {
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
+}
+
+/* ===== 按钮间距 ===== */
+.el-button + .el-tooltip,
+.el-button + .el-button {
+  margin-left: 10px;
+}
+
+/* ===== 通用间距类 ===== */
+.mgb20 {
+  margin-bottom: 20px;
+}
+
+/* ===== 路由过渡动画 ===== */
+.move-enter-active,
+.move-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.move-enter-from,
+.move-leave-to {
+  opacity: 0;
+}
+
+/* ===== 表单容器 ===== */
+.form-box {
+  width: 600px;
+}
+
+.form-box .line {
+  text-align: center;
+}
+
+/* v-permiss 隐藏元素时使用 display:none，无需此规则；保留兼容 */
+[hidden] {
+  display: none !important;
+}
+
+/* ===== 管理端 独有工具类 ===== */
+.na-flex {
+  display: flex;
+}
+
+.na-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.na-flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 卡片容器 */
+.na-card {
+  background-color: var(--na-bg-container);
+  border-radius: var(--na-radius);
+  box-shadow: var(--na-shadow);
+  padding: 20px;
+}
+
+/* 页面内容容器 */
+.na-page {
+  padding: 20px;
+}
+
+/* 搜索栏与表格常用间距 */
+.na-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.na-search {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* 文本省略 */
+.na-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===== Element Plus 组件级主题补强 ===== */
+/* 以下组件的焦点环、选中态等使用了硬编码色值或独立 CSS 变量，
+   仅靠 --el-color-primary 变量覆盖不够，需要额外补强 */
+
+/* 输入框 / 文本域焦点环 */
+.el-input__wrapper:focus-within,
+.el-textarea__inner:focus {
+  box-shadow: 0 0 0 1px var(--el-color-primary) inset !important;
+}
+
+/* Select 焦点环 */
+.el-select .el-input.is-focus .el-input__wrapper {
+  box-shadow: 0 0 0 1px var(--el-color-primary) inset !important;
+}
+
+/* 表格当前选中行高亮 */
+.el-table__body tr.current-row > td {
+  background-color: var(--el-color-primary-light-9) !important;
+}
+
+/* 分页激活页码背景色 */
+.el-pagination .el-pager li.is-active {
+  background-color: var(--el-color-primary) !important;
+  color: #ffffff !important;
+}
+
+/* 开关激活态 */
+.el-switch.is-checked .el-switch__core {
+  background-color: var(--el-color-primary) !important;
+  border-color: var(--el-color-primary) !important;
+}
+
+/* Radio 选中态 */
+.el-radio__input.is-checked .el-radio__inner {
+  background-color: var(--el-color-primary) !important;
+  border-color: var(--el-color-primary) !important;
+}
+.el-radio__input.is-checked + .el-radio__label {
+  color: var(--el-color-primary) !important;
+}
+
+/* Checkbox 选中态 */
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--el-color-primary) !important;
+  border-color: var(--el-color-primary) !important;
+}
+.el-checkbox__input.is-checked + .el-checkbox__label {
+  color: var(--el-color-primary) !important;
+}
+
+/* Steps 激活态 */
+.el-step__head.is-finish {
+  color: var(--el-color-primary) !important;
+  border-color: var(--el-color-primary) !important;
+}
+.el-step__title.is-finish {
+  color: var(--el-color-primary) !important;
+}
+.el-step__head.is-process {
+  color: var(--el-color-primary) !important;
+  border-color: var(--el-color-primary) !important;
+}
+
+/* Link 激活态 */
+.el-link--primary {
+  color: var(--el-color-primary) !important;
+}
+.el-link--primary:hover {
+  color: var(--el-color-primary-light-3) !important;
+}
+
+/* Tabs 激活下划线 */
+.el-tabs__active-bar {
+  background-color: var(--el-color-primary) !important;
+}
+.el-tabs__item.is-active {
+  color: var(--el-color-primary) !important;
+}
+
+/* Tag primary 类型 */
+.el-tag--primary {
+  --el-tag-bg-color: var(--el-color-primary-light-9) !important;
+  --el-tag-border-color: var(--el-color-primary-light-8) !important;
+  --el-tag-text-color: var(--el-color-primary) !important;
+}
+
+/* Loading 加载圈 */
+.el-loading-spinner .circular .path {
+  stroke: var(--el-color-primary) !important;
+}
+
+/* Message 消息提示主色图标 */
+.el-message--info .el-message__content {
+  color: var(--el-color-info);
+}
+
+/* Breadcrumb 最后一级 */
+.el-breadcrumb__inner.is-link:hover,
+.el-breadcrumb__inner a:hover {
+  color: var(--el-color-primary) !important;
+}

@@ -1,0 +1,22 @@
+# Maven 构建产物
+target/
+
+# H2 本地数据库文件（dev profile 生成，不提交）
+data/
+
+# IDE 配置
+.classpath
+.factorypath
+.project
+.settings/
+.idea/
+*.iml
+
+# 日志
+*.log
+logs/
+
+# 临时文件
+*.tmp
+*.bak
+cp.txt

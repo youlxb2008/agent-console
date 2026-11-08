@@ -1,0 +1,572 @@
+/* ================================================================
+   门户端全局样式（v6 双主题 × 三质感套件 · 纯 CSS 无图）
+   ----------------------------------------------------------------------------
+   - 双主题：:root 默认暗色，html[data-theme='light'] 亮色
+     （index.html 内联脚本在首帧前写入 data-theme，避免闪烁）
+   - 三质感：html[data-texture] 可切换，全部纯 CSS 渐变实现，零图片：
+     · aurora 柔光玻璃 —— 大面积彩色 radial 光晕 + 颗粒 + 卡片悬浮阴影
+     · relief 极简浮雕 —— 背景近乎纯净，靠卡片"顶部内高光 + 双层投影"做立体
+     · grid  细网格光晕 —— 16px 钴蓝色相 hairline 网格 + 一抹顶光，工程感
+   - token 分层：--tx-* 为质感 token（随 data-texture 切换），
+     组件样式只消费 token，不感知具体方案
+   - 大屏适配：容器统一 --container-max（1560px），正文另有阅读限宽
+   ================================================================ */
+
+:root {
+  /* ---- 容器（navbar / footer / 三栏 / 首页共用，大屏放宽） ---- */
+  --container-max: 1560px;
+  --container-pad: 32px;
+
+  /* ---- 核心背景（暗色基准） ---- */
+  --bg-body: #0F1115;          /* 深炭主背景 */
+  --bg-panel: #181B22;          /* 卡片/面板 */
+  --bg-panel-2: #1F232C;        /* 次级面板（hover/active） */
+  --bg-elevated: #252A35;       /* 弹层/浮层 */
+  --bg-input: #1B1F28;          /* 输入框底 */
+
+  /* ---- 主色 / 亮色（钴蓝 B4 单一亮色） ---- */
+  --accent: #3B82F6;            /* 钴蓝主色 */
+  --accent-strong: #2563EB;     /* 钴蓝加深（hover/pressed） */
+  --accent-soft: rgba(59, 130, 246, 0.14); /* 钴蓝淡底（chip/tag） */
+  --accent-tint: #1E3A5F;        /* 钴蓝深底（blockquote） */
+  --accent-rgb: 59, 130, 246;
+
+  /* ---- 文本 ---- */
+  --text-main: #ECEEF2;         /* 主文字 */
+  --text-secondary: #B8BFCC;    /* 次要文字 */
+  --text-muted: #8A92A3;        /* 弱化文字（meta、辅助说明） */
+
+  /* ---- 边框 / 分割 ---- */
+  --border: #262A33;            /* hairline 边框 */
+  --border-strong: #3A4150;     /* 强边框（输入框、卡片强调） */
+  --divider: #1F232C;           /* 列表行分隔 */
+
+  /* ---- 代码块 / 滚动条 / 斑马行（主题相关，需随主题切换） ---- */
+  --code-pre-bg: #0B0D12;       /* pre 代码块底 */
+  --scrollbar-thumb: #2C313A;
+  --scrollbar-track: #0F1115;
+  --row-stripe: rgba(255, 255, 255, 0.02); /* 表格偶数行 */
+
+  /* ---- 头像 4 色循环（区分 agent，去饱和） ---- */
+  --tone-blue: #3B82F6;     /* 云 */
+  --tone-teal: #14B8A6;     /* 蕾 */
+  --tone-green: #22C55E;    /* 小 */
+  --tone-amber: #F59E0B;    /* 备用第 4 色 */
+  --tone-violet: #8B5CF6;   /* 备用第 5 色 */
+
+  /* ---- 语义 ---- */
+  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.02);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* ================================================================
+     质感套件默认 token（= aurora 暗色；html[data-texture] 会覆写）
+     --tx-bg-image / --tx-bg-size : body::before 的背景层（多层渐变）
+     --tx-noise                   : body::after 颗粒层透明度
+     --tx-panel-shadow            : 普通卡片统一阴影（浮雕感载体）
+     --tx-primary-shadow          : 主卡片（蓝底 kpi）阴影
+     ================================================================ */
+  --tx-bg-image:
+    radial-gradient(900px 520px at 15% -5%, rgba(59, 130, 246, 0.16), transparent 60%),
+    radial-gradient(720px 430px at 85% 0%, rgba(45, 212, 191, 0.07), transparent 55%),
+    radial-gradient(1000px 540px at 50% 112%, rgba(139, 92, 246, 0.09), transparent 62%);
+  --tx-bg-size: auto;
+  --tx-noise: 0.025;
+  --tx-noise-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tx-panel-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 2px 6px rgba(0, 0, 0, 0.2),
+    0 12px 32px rgba(0, 0, 0, 0.22);
+  --tx-primary-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+
+  /* ---- 字体栈 ---- */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto',
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑',
+    'Source Han Sans CN', 'Noto Sans CJK SC', 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-mono:
+    'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo,
+    'Source Code Pro', 'Courier New', monospace;
+}
+
+/* ---- 亮色主题变体（html[data-theme='light'] 时生效） ----
+   与暗色一一对应：同一钴蓝体系，仅明度反转；
+   亮色下 accent 加深到 #2563EB 保证文字对比度 ≥ 4.5:1 */
+html[data-theme='light'] {
+  --bg-body: #F6F7F9;
+  --bg-panel: #FFFFFF;
+  --bg-panel-2: #EEF1F5;
+  --bg-elevated: #FFFFFF;
+  --bg-input: #FFFFFF;
+
+  --accent: #2563EB;
+  --accent-strong: #1D4ED8;
+  --accent-soft: rgba(37, 99, 235, 0.10);
+  --accent-tint: #E8F0FE;
+  --accent-rgb: 37, 99, 235;
+
+  --text-main: #171E2E;
+  --text-secondary: #3F4A5F;
+  --text-muted: #6B7486;
+
+  --border: #E3E7ED;
+  --border-strong: #C9D0DB;
+  --divider: #EAECEF;
+
+  --code-pre-bg: #F6F8FA;
+  --scrollbar-thumb: #C9D0DB;
+  --scrollbar-track: #F6F7F9;
+  --row-stripe: rgba(23, 30, 46, 0.025);
+  --shadow-pop: 0 12px 32px rgba(16, 24, 40, 0.14);
+
+  --shadow-panel: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+/* ================================================================
+   质感方案 token（暗色基准）：html[data-texture='aurora' | 'relief' | 'grid']
+   注意：选择器写 html[data-texture=...]（html 元素），优先级与
+   html[data-theme='light'] 同级，后写者胜 → 亮色覆写块必须排在其后
+   ================================================================ */
+
+/* ---- A. aurora 柔光玻璃（暗色）：三色 radial 光晕 + 明显颗粒 + 悬浮阴影 ---- */
+html[data-texture='aurora'] {
+  --tx-bg-image:
+    radial-gradient(900px 520px at 15% -5%, rgba(59, 130, 246, 0.16), transparent 60%),
+    radial-gradient(720px 430px at 85% 0%, rgba(45, 212, 191, 0.07), transparent 55%),
+    radial-gradient(1000px 540px at 50% 112%, rgba(139, 92, 246, 0.09), transparent 62%);
+  --tx-bg-size: auto;
+  --tx-noise: 0.025;
+  --tx-panel-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 2px 6px rgba(0, 0, 0, 0.2),
+    0 12px 32px rgba(0, 0, 0, 0.22);
+  --tx-primary-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+}
+
+/* ---- B. relief 极简浮雕（暗色）：顶部聚光 + 卡片"刻面"立起
+      核心是让卡片像被顶光从上方照亮的浮雕：
+      · --tx-bg-image 让页面上半部（340px）比底色更亮，营造"灯光打在卷首"
+      · --tx-panel-shadow 用 内顶白高光 + 内描边 + 贴地接触阴 + 环境投 四段，
+        让卡片四边有明确的明暗过渡，从背景里"凸"出来（比 aurora 更锐利） ---- */
+html[data-texture='relief'] {
+  /* 顶部聚光更明显、更亮：radial 聚光 + 更长渐变，"灯光打在卷首"可见 */
+  --tx-bg-image:
+    radial-gradient(1100px 460px at 50% -6%, rgba(255, 255, 255, 0.055), transparent 62%),
+    linear-gradient(180deg, #232B38 0%, #1A1F28 260px, var(--bg-body) 560px);
+  --tx-bg-size: auto;
+  --tx-noise: 0.018;
+  /* 四段浮雕：内顶白高光更亮 + 内描边更实 + 贴地接触阴 + 环境投 */
+  --tx-panel-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.13),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.045),
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 12px 28px rgba(0, 0, 0, 0.35);
+  --tx-primary-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 8px 24px rgba(59, 130, 246, 0.42);
+  /* 列表行浮雕：让 hairline 列表行也微微浮起（仅 relief 质感生效） */
+  --tx-row-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 1px 0 rgba(0, 0, 0, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.18);
+  --tx-row-bg: rgba(255, 255, 255, 0.02);
+}
+
+/* ---- C. grid 细网格光晕（暗色）：一抹顶光 + 16px 钴蓝色相网格
+      网格线带钴蓝色相（与顶光/主色同族），和侧栏深炭 UI 线（--border #262A33）
+      在色相上彻底分开 → 背景纹理 vs 界面结构两个层级不再混淆 ---- */
+html[data-texture='grid'] {
+  --tx-bg-image:
+    radial-gradient(70vw 34vh at 38% -12%, rgba(59, 130, 246, 0.14), transparent 65%),
+    linear-gradient(to right, rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+  /* 多背景各自尺寸：光晕 auto，网格两个方向都 16px 重复（更小更密） */
+  --tx-bg-size: auto, 16px 16px, 16px 16px;
+  --tx-noise: 0.02;
+  --tx-panel-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 8px 24px rgba(0, 0, 0, 0.18);
+  --tx-primary-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+}
+
+/* ---- 亮色覆写（必须排在暗色块之后，同优先级后写者胜） ---- */
+
+/* A. aurora 亮色：光晕减淡但保留色相，阴影换浅色系 */
+html[data-theme='light'][data-texture='aurora'] {
+  --tx-bg-image:
+    radial-gradient(900px 520px at 15% -5%, rgba(59, 130, 246, 0.12), transparent 60%),
+    radial-gradient(720px 430px at 85% 0%, rgba(20, 184, 166, 0.06), transparent 55%),
+    radial-gradient(1000px 540px at 50% 112%, rgba(139, 92, 246, 0.06), transparent 62%);
+  --tx-noise: 0.012;
+  --tx-panel-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 2px 6px rgba(16, 24, 40, 0.05),
+    0 12px 32px rgba(16, 24, 40, 0.08);
+  --tx-primary-shadow: 0 8px 24px rgba(37, 99, 235, 0.25);
+}
+
+/* B. relief 亮色：白卡片 + 顶部白高光 + 更实的浅投影（让白卡从淡灰背景浮起）
+   亮色下内白高光在纯白卡上看不见，故靠"顶部背景压暗一格 + 清晰双层投影"
+   把卡片的悬浮轮廓勾出来 ------------------------------- */
+html[data-theme='light'][data-texture='relief'] {
+  --tx-bg-image:
+    radial-gradient(1100px 460px at 50% -6%, rgba(255, 255, 255, 0.9), transparent 60%),
+    linear-gradient(180deg, #EAEDF3 0%, #F2F4F7 300px, var(--bg-body) 600px);
+  --tx-noise: 0.004;
+  --tx-panel-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 0 0 1px rgba(16, 24, 40, 0.03),
+    0 1px 2px rgba(16, 24, 40, 0.08),
+    0 12px 28px rgba(16, 24, 40, 0.09);
+  --tx-primary-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 6px 18px rgba(37, 99, 235, 0.28),
+    0 14px 30px rgba(37, 99, 235, 0.1);
+  --tx-row-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(16, 24, 40, 0.06);
+  --tx-row-bg: rgba(255, 255, 255, 0.55);
+}
+
+/* C. grid 亮色：顶光更淡 + 16px 钴蓝色相网格（与顶光同族；
+   侧栏 UI 线 --border #E3E7ED 是中性灰，色相区分后网格不再"融进"边框） */
+html[data-theme='light'][data-texture='grid'] {
+  --tx-bg-image:
+    radial-gradient(70vw 34vh at 38% -12%, rgba(37, 99, 235, 0.08), transparent 65%),
+    linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(37, 99, 235, 0.045) 1px, transparent 1px);
+  --tx-bg-size: auto, 16px 16px, 16px 16px;
+  --tx-noise: 0;
+  --tx-panel-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.05),
+    0 8px 24px rgba(16, 24, 40, 0.06);
+  --tx-primary-shadow: 0 8px 24px rgba(37, 99, 235, 0.2);
+}
+
+/* ---- 全局重置 ---- */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* ================================================================
+   app-shell 视口锁定：桌面端页面整体不滚动（无外部滚动条），
+   滚动只发生在内容区内部（各 View 的滚动容器 / 三栏各自滚动）。
+   960px 以下回退传统整页滚动（三栏堆叠，中栏内容随页滚）。
+   ================================================================ */
+html,
+body,
+#app {
+  height: 100%;
+  overflow: hidden;
+}
+
+@media (max-width: 960px) {
+  html,
+  body,
+  #app {
+    height: auto;
+    overflow: auto;
+  }
+}
+
+html {
+  background: var(--bg-body);
+  /* 暗色为默认主题；亮色时由 data-theme 覆盖（影响原生滚动条/表单控件） */
+  color-scheme: dark;
+}
+
+html[data-theme='light'] {
+  color-scheme: light;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-main);
+  background: var(--bg-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* ================================================================
+   质感背景层（body::before）：渲染 --tx-bg-image（渐变/网格由 token 决定）
+   - fixed + pointer-events:none，纯 GPU 合成，渲染成本可忽略
+   - 顶底 mask 收边：仅 ~3% 边缘淡出，避免生硬截断
+   ================================================================ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: var(--tx-bg-image);
+  background-size: var(--tx-bg-size);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 3%,
+    black 97%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 3%,
+    black 97%,
+    transparent 100%
+  );
+}
+
+/* ================================================================
+   关键：内容层必须盖在背景层之上。
+   body::before / ::after 是 fixed + z-index:0 的定位层；若页面内容是非定位的
+   （z-index:auto、static），按层叠绘制顺序，z-index:0 定位层会画在普通流内容之上。
+   浮雕方案的不透明渐变背景一旦盖上，就会整个盖住正文 → 白屏/黑屏。
+   这里把 Vue 挂载根 #app 提升为定位层并置到 z-index:1，让正文浮在背景层之上。
+   ================================================================ */
+#app {
+  position: relative;
+  z-index: 1;
+}
+
+/* ================================================================
+   颗粒层（body::after）：极弱 SVG noise，透明度由 --tx-noise 控制
+   （亮色 relief/grid 下接近 0，视觉上等于关闭）
+   ================================================================ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: var(--tx-noise-image);
+  background-size: 160px 160px;
+  opacity: var(--tx-noise);
+}
+
+/* ================================================================
+   质感阴影注入：给真正的"卡片"统一挂 --tx-panel-shadow
+   注意范围克制：只给独立卡片（面板/KPI chip/空态/骨架），
+   不碰列表行（.agent-card/.recent-item）与文档三栏（图二的无边框设计）
+   ================================================================ */
+.panel,
+.panel-strong,
+.kpi-chip,
+.empty,
+.skeleton-card {
+  box-shadow: var(--tx-panel-shadow);
+}
+
+/* 主 KPI 卡（蓝底）：独立的 accent 光晕阴影 */
+.kpi-primary {
+  box-shadow: var(--tx-primary-shadow);
+}
+
+/* ---- 全局滚动条（颜色随主题） ---- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #3A4150;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-strong);
+}
+
+/* ================================================================
+   Markdown 正文排版（B4 深色长文档专用）
+   ================================================================ */
+.markdown-body {
+  color: var(--text-main);
+  font-size: 16px;
+  line-height: 1.75;
+  word-break: break-word;
+  /* 中文长词不强制拆开 */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.markdown-body > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin: 1.6em 0 0.8em;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-main);
+  letter-spacing: -0.3px;
+}
+
+.markdown-body h1 {
+  font-size: 2em;
+  padding-bottom: 0.4em;
+  border-bottom: 1px solid var(--border);
+}
+
+.markdown-body h2 {
+  font-size: 1.6em;
+  padding-bottom: 0.4em;
+  border-bottom: 1px solid var(--border);
+}
+
+.markdown-body h3 {
+  font-size: 1.25em;
+  color: var(--accent);
+}
+
+.markdown-body h4 {
+  font-size: 1.05em;
+}
+
+.markdown-body p {
+  margin: 0.9em 0;
+}
+
+.markdown-body a {
+  color: var(--accent);
+}
+
+.markdown-body a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin: 0.9em 0;
+  padding-left: 1.6em;
+}
+
+.markdown-body li {
+  margin: 0.3em 0;
+}
+
+.markdown-body blockquote {
+  margin: 1em 0;
+  padding: 12px 18px;
+  border-left: 4px solid var(--accent);
+  background: var(--accent-tint);
+  color: var(--text-main);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.markdown-body code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  padding: 2px 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-main);
+}
+
+.markdown-body pre {
+  position: relative;
+  margin: 1em 0;
+  padding: 14px 16px;
+  background: #0B0D12;
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+.markdown-body pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.9em;
+}
+
+.markdown-body img {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.95em;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.markdown-body th {
+  background: var(--bg-panel-2);
+  font-weight: 600;
+}
+
+.markdown-body tr:nth-child(even) td {
+  background: var(--row-stripe);
+}
+
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.6em 0;
+}
+
+/* ================================================================
+   通用：面板（深色版替换 v3 的 glass-card）
+   ================================================================ */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+}
+
+.panel-strong {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+}

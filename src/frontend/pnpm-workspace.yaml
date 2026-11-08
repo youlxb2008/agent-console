@@ -1,0 +1,5 @@
+# pnpm 閰嶇疆锛坧npm v11 璧凤紝鏋勫缓鑴氭湰璁稿彲浣跨敤 allowBuilds 鏄犲皠锛?# 鍏佽浠ヤ笅渚濊禆鍦ㄥ畨瑁呮椂鎵ц鏋勫缓鑴氭湰锛坧ostinstall锛?allowBuilds:   esbuild: true   '@parcel/watcher': true
+
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true

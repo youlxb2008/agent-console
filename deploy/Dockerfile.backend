@@ -1,0 +1,7 @@
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+COPY backend.jar /app/backend.jar
+ENV TZ=Asia/Shanghai JAVA_OPTS="-Xms256m -Xmx768m"
+EXPOSE 8000
+# umask 0022 保证 notes 目录内新建文件 644/755（宿主机进程可直读）
+ENTRYPOINT ["sh", "-c", "umask 0022 && java $JAVA_OPTS -jar /app/backend.jar"]

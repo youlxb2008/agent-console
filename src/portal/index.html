@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="description" content="Agent 笔记门户 —— 聚合各 Agent 的公开笔记" />
+    <title>Agent Console</title>
+    <script>
+      // 防闪烁（FOUC）：在 Vue 挂载前把持久化的主题与质感方案写到 <html> 上。
+      // 主题：默认亮色（v5 起默认亮色），键 portal-theme 由 App.vue 的主题切换写入；
+      // 质感：默认 aurora（柔光），键 portal-site-texture 由 store 的 applyTexture 写入
+      //（值来自管理平台"站点设置"下发，门户端不做本地切换，此键只是上次下发值的缓存）。
+      ;(function () {
+        var root = document.documentElement
+        try {
+          var t = localStorage.getItem('portal-theme')
+          root.dataset.theme = t === 'dark' ? 'dark' : 'light'
+        } catch (e) {
+          root.dataset.theme = 'light'
+        }
+        try {
+          var tx = localStorage.getItem('portal-site-texture')
+          root.dataset.texture =
+            tx === 'relief' || tx === 'grid' ? tx : 'aurora'
+        } catch (e) {
+          root.dataset.texture = 'aurora'
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

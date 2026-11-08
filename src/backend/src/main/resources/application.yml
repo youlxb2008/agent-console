@@ -1,0 +1,136 @@
+# ============================================================
+# agent-console 基础配置（与数据库无关的通用配置）
+# profile 相关的数据库配置见 application-{dev|prod}.yml
+# ============================================================
+server:
+  port: 8000
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: agent-console
+  # 默认 profile：本地开发走 dev（H2 文件模式）
+  # 生产部署用 -Dspring.profiles.active=prod 覆盖
+  profiles:
+    active: dev
+  # Jackson 时间格式化（全局）
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
+  # Redis（生产必接；本地 dev 如无 Redis 可降级为本地缓存，见 CacheConfig）
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 5000ms
+  # 文件上传大小限制（multipart 表单）
+  # 普通上传单文件最大 50MB；断点续传场景单分片 2MB，但整体文件可更大
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+# 数据根目录配置
+# 所有本地数据目录从此根目录派生，各 profile 仅需覆盖 data-root 即可
+# 派生规则（见 DataRootConfig）：
+#   上传目录   = ${data-root}/uploads
+#   临时目录   = ${data-root}/temp
+#   数据库目录 = ${data-root}/db       （dev H2 模式）
+# 各子目录也可单独覆盖：upload-dir / upload-temp-dir
+web:
+  data-root: ${DATA_ROOT:./data}
+  # 分片大小：2MB（前端按此大小切分文件，后端按此大小写入分片）
+  chunk-size: 2097152
+
+# MinIO 存储配置（M5.1-R1：上传存储介质，替换本地磁盘）
+# 真实凭据由部署机 .env 注入（MINIO_* 环境变量），不入库、不进代码库
+# 桶需预建并配置 public-read 策略（匿名 GET 直链可读）
+# path-prefix 为环境语义无关前缀（各环境自定，URL 不暴露环境标识）
+# 未配置时（本地裸 dev/单测）启动不阻断，上传接口运行期返回 500 明确 msg（不做本地磁盘 fallback）
+minio:
+  endpoint: ${MINIO_ENDPOINT:}
+  access-key: ${MINIO_ACCESS_KEY:}
+  secret-key: ${MINIO_SECRET_KEY:}
+  bucket: ${MINIO_BUCKET:agent-console-attachment}
+  path-prefix: ${MINIO_PATH_PREFIX:}
+
+# 知识库（KB）配置：检索索引目录 + 阿里云百炼（DashScope）OpenAI 兼容接口
+# API Key 不在此配置：存 t_option 表（optionKey=dashscope.api_key），管理端「系统配置」页维护，
+# 改 key 无需重启；未配置时语义检索/RAG 问答自动降级（BM25/标题检索仍可用）
+kb:
+  # Lucene 全文索引目录（删除该目录即可安全重建）
+  index-root: ${web.data-root}/kb-index
+  dashscope:
+    # OpenAI 兼容模式基地址（内网代理可覆盖）
+    base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    # 向量模型（1024 维；换模型须全量重建索引）
+    embedding-model: text-embedding-v3
+    # RAG 问答生成模型
+    chat-model: qwen-plus
+
+# 记忆库（M7.1）配置
+memory:
+  # Lucene 记忆全文索引目录（独立于知识库索引；删除该目录即可安全重建，
+  # 可用 MemoryIndexService.rebuildAll 按 DB 全量重建）
+  index-root: ${web.data-root}/memory-index
+
+# agent 消息总线（M1，bus-m1）
+# 目标路由不在此配置：经环境变量 BUS_TARGET_{n} 注入（toId|wsUrl|secret|models=*，禁入库禁进 git，
+# Environment.getProperty("bus.target.n") 经 relaxed binding 命中 BUS_TARGET_N）
+bus:
+  dispatch:
+    # dispatcher 消费循环开关（测试置 false 关闭后台线程；prod/dev 默认开启，
+    # Redis 缺失或无路由时启动自动跳过不阻塞）
+    enabled: ${BUS_DISPATCH_ENABLED:true}
+  api:
+    # api 通道 HTTP 请求超时 ms（bus-route-channel；默认 150s 大于 nanobot 服务端 120s；
+    # 超时 != 未触发，勿调小；测试可注小值）
+    timeout-ms: ${BUS_API_TIMEOUT_MS:150000}
+
+# SpringDoc OpenAPI / Swagger UI
+springdoc:
+  swagger-ui:
+    path: /swagger/
+
+# MyBatis-Plus 全局配置
+mybatis-plus:
+  global-config:
+    db-config:
+      # 表名下划线、字段名驼峰自动映射
+      table-underline: true
+      # 逻辑删除（本项目暂未使用，预留）
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    # 开发环境打印 SQL（日志级别 debug 时才输出）
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# 日志级别
+logging:
+  level:
+    root: info
+    # SQL 执行日志（debug 级别可看到具体 SQL）
+    com.youlxb2008.admin: info
+
+# Spring Boot Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    env:
+      enabled: true
+info:
+  app:
+    name: ${spring.application.name}
+    version: ${project.version:0.0.1-SNAPSHOT}

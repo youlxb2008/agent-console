@@ -1,0 +1,192 @@
+/**
+ * CSS 变量定义
+ *
+ * 业务组件应优先使用这些变量，避免硬编码颜色。
+ * 对齐 NodeAdmin 深色主题风格，保留 管理端 独有的 radius/shadow 等变量。
+ */
+
+:root {
+  /* ===== 主色调（紫蓝渐变，呼应登录页） ===== */
+  --na-primary: #6366f1;
+  --na-primary-hover: #818cf8;
+  --na-primary-active: #4f46e5;
+  /* primary 浅色变体（用于 tags 非激活态、轻量背景标识主题归属） */
+  --na-primary-light-8: #ddd6fe;
+  --na-primary-light-9: #ede9fe;
+  --na-primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  --na-primary-gradient-hover: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+
+  /* ===== 功能色（柔和现代风，统一冷色调，与紫色主色协调） ===== */
+  /* success：柔和翠绿（Tailwind emerald-500） */
+  --na-success: #10b981;
+  /* warning：柔和琥珀（Tailwind amber-500） */
+  --na-warning: #f59e0b;
+  /* danger：柔和玫瑰红（Tailwind rose-500，比鲜红柔和） */
+  --na-danger: #f43f5e;
+  /* info：蓝灰（与 sidebar 文字色协调的冷灰） */
+  --na-info: #64748b;
+
+  /* ===== Element Plus 主题色覆盖 ===== */
+  /* 将 Element Plus 默认蓝色 #409eff 替换为紫蓝色 #6366f1，统一全局主题色
+   * Element Plus 组件（按钮、输入框焦点、开关、分页、表格选中、消息提示等）
+   * 全部通过这些 CSS 变量控制颜色，覆盖后自动生效 */
+  --el-color-primary: #6366f1;
+  --el-color-primary-light-1: #7279f2;
+  --el-color-primary-light-2: #818cf8;
+  --el-color-primary-light-3: #9199f9;
+  --el-color-primary-light-4: #a5b4fc;
+  --el-color-primary-light-5: #b4befd;
+  --el-color-primary-light-6: #c7d2fe;
+  --el-color-primary-light-7: #d5d9fe;
+  --el-color-primary-light-8: #ddd6fe;
+  --el-color-primary-light-9: #ede9fe;
+  --el-color-primary-dark-2: #4f46e5;
+
+  /* 功能色覆盖：柔和现代风，与紫色主色协调
+   * 显式声明以便后续如需调整只需改这里 */
+  --el-color-success: #10b981;
+  --el-color-success-light-3: #6ee7b7;
+  --el-color-success-light-5: #a7f3d0;
+  --el-color-success-light-7: #d1fae5;
+  --el-color-success-light-8: #ecfdf5;
+  --el-color-success-light-9: #f0fdfa;
+  --el-color-success-dark-2: #059669;
+
+  --el-color-warning: #f59e0b;
+  --el-color-warning-light-3: #fcd34d;
+  --el-color-warning-light-5: #fde68a;
+  --el-color-warning-light-7: #fef3c7;
+  --el-color-warning-light-8: #fffbeb;
+  --el-color-warning-light-9: #fffbeb;
+  --el-color-warning-dark-2: #d97706;
+
+  --el-color-danger: #f43f5e;
+  --el-color-danger-light-3: #fb7185;
+  --el-color-danger-light-5: #fda4af;
+  --el-color-danger-light-7: #fecdd3;
+  --el-color-danger-light-8: #ffe4e6;
+  --el-color-danger-light-9: #fff1f2;
+  --el-color-danger-dark-2: #e11d48;
+
+  --el-color-info: #64748b;
+  --el-color-info-light-3: #94a3b8;
+  --el-color-info-light-5: #cbd5e1;
+  --el-color-info-light-7: #e2e8f0;
+  --el-color-info-light-8: #f1f5f9;
+  --el-color-info-light-9: #f8fafc;
+  --el-color-info-dark-2: #475569;
+
+  /* error 别名系列（与 danger 相同）
+   * Element Plus 中 el-form-item 校验失败、el-message/alert/notification/tag 的 error 类型
+   * 都使用 --el-color-error 系列。如果不覆盖，切换主题时这些场景仍显示默认红色 */
+  --el-color-error: #f43f5e;
+  --el-color-error-light-3: #fb7185;
+  --el-color-error-light-5: #fda4af;
+  --el-color-error-light-7: #fecdd3;
+  --el-color-error-light-8: #ffe4e6;
+  --el-color-error-light-9: #fff1f2;
+  --el-color-error-dark-2: #e11d48;
+
+  /* Element Plus 文字色覆盖，对齐 --na-text 系列 */
+  --el-text-color-primary: #303133;
+  --el-text-color-regular: #606266;
+  --el-text-color-secondary: #909399;
+  --el-text-color-placeholder: #a8abb2;
+  --el-text-color-disabled: #c0c4cc;
+
+  /* Element Plus 边框色覆盖，对齐 --na-border 系列 */
+  --el-border-color: #dcdfe6;
+  --el-border-color-light: #e4e7ed;
+  --el-border-color-lighter: #ebeef5;
+  --el-border-color-extra-light: #f2f6fc;
+  --el-border-color-dark: #d4d7de;
+  --el-border-color-darker: #cdd0d6;
+  /* 输入框 hover 边框：Element Plus 2.x 默认是 --el-text-color-disabled */
+  --el-border-color-hover: var(--el-text-color-disabled);
+
+  /* Element Plus 填充色覆盖 */
+  --el-fill-color: #f0f2f5;
+  --el-fill-color-light: #f5f7fa;
+  --el-fill-color-lighter: #fafafa;
+  --el-fill-color-extra-light: #fafcff;
+  --el-fill-color-dark: #ebedf0;
+  --el-fill-color-darker: #e6e8eb;
+  --el-fill-color-blank: #ffffff;
+
+  /* Element Plus 禁用态 */
+  --el-disabled-bg-color: var(--el-fill-color-light);
+  --el-disabled-text-color: var(--el-text-color-placeholder);
+  --el-disabled-border-color: var(--el-border-color-light);
+
+  /* Element Plus 圆角覆盖，对齐 --na-radius */
+  --el-border-radius-base: 8px;
+  --el-border-radius-small: 4px;
+  --el-border-radius-round: 20px;
+
+  /* Element Plus 阴影覆盖 */
+  --el-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+  --el-box-shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+
+  /* ===== 背景层 ===== */
+  --na-bg-base: #f5f7fa;
+  --na-bg-page: #f8fafc; /* 微调：从 #f0f2f5 改浅 */
+  --na-bg-container: #ffffff;
+  --na-bg-elevated: #ffffff;
+  --na-bg-header: #1e293b; /* header 背景（暗色默认，applyTheme 会覆盖） */
+  --na-text-header: #f1f5f9; /* header 文字色 */
+  --na-border-header: rgba(255, 255, 255, 0.06); /* header 边框/分割线 */
+  --na-bg-sidebar: #0f172a; /* sidebar 背景（暗色默认，applyTheme 会覆盖） */
+  --na-bg-sidebar-hover: rgba(99, 102, 241, 0.08); /* 菜单 hover 背景 */
+  --na-bg-sidebar-active: rgba(99, 102, 241, 0.15); /* 菜单 active 背景 */
+  --na-bg-hover: #f5f7fa;
+
+  /* ===== 文字 ===== */
+  --na-text-primary: #303133;
+  --na-text-regular: #606266;
+  --na-text-secondary: #909399;
+  --na-text-placeholder: #c0c4cc;
+  --na-text-inverse: #ffffff;
+  --na-text-sidebar: #cbd5e1; /* 微调：从 #bfcbd9 改更清晰 */
+  --na-text-sidebar-active: #ffffff;
+
+  /* ===== 边框 ===== */
+  --na-border-base: #dcdfe6;
+  --na-border-light: #e4e7ed;
+  --na-border-lighter: #ebeef5;
+  --na-border-extra-light: #f2f6fc;
+  --na-border-sidebar: rgba(255, 255, 255, 0.06);
+
+  /* ===== 阴影 ===== */
+  --na-shadow-base: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+  --na-shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  --na-shadow-header: 0 1px 0 rgba(0, 0, 0, 0.06), 0 4px 16px -4px rgba(0, 0, 0, 0.08);
+  --na-shadow-tag-active: 0 4px 12px rgba(99, 102, 241, 0.35);
+  --na-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px -4px rgba(15, 23, 42, 0.06);
+
+  /* ===== 布局尺寸 ===== */
+  --na-header-height: 60px; /* 微调：从 70px 收窄 */
+  --na-sidebar-width: 240px; /* 微调：从 250px 收窄 */
+  --na-sidebar-collapse-width: 64px;
+  --na-tags-height: 38px; /* 微调：从 30px 加高 */
+
+  /* ===== 圆角与阴影（管理端 独有） ===== */
+  --na-radius: 8px;
+  --na-radius-sm: 4px;
+  --na-radius-tag: 14px; /* 标签药丸圆角 */
+  --na-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --na-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  /* ===== 过渡动画（管理端 独有） ===== */
+  --na-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --na-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== 小屏自适应（≤768px） ===== */
+/* 小屏下 sidebar 自动折叠、header 收窄，无需手动切换布局宽度 */
+@media (max-width: 768px) {
+  :root {
+    --na-header-height: 50px;
+    --na-sidebar-width: 160px;
+    --na-sidebar-collapse-width: 48px;
+  }
+}

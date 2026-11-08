@@ -1,0 +1,90 @@
+# ============================================================
+# 本地开发 profile：H2 文件模式（开箱即用，无需 MySQL）
+# 数据库文件位置：{data-root}/db/webadmin.mv.db
+# 重置数据库：删除 {data-root}/db/ 目录后重启
+# DDL 管理：AutoDDL 自动同步（根据 Entity 建表/加列），无需手动写 migration
+# ============================================================
+# 本地开发：如果无 Redis，使用 Caffeine 本地缓存
+# 如需连接 Redis，设置环境变量 SPRING_DATA_REDIS_HOST=localhost
+spring:
+  cache:
+    type: simple
+
+  # ============================================================
+  # 数据源（dynamic-datasource 格式，与 prod 完全一致）
+  # ============================================================
+  # 通过 spring.datasource.dynamic.datasource.primary 配置 H2 主数据源
+  # dynamic-datasource starter 会自动装配并创建 DataSource Bean
+  # 多数据源扩展：在 datasource 下新增 secondary / tertiary 即可
+  datasource:
+    dynamic:
+      primary: primary
+      # 严格匹配模式：未配置的数据源名会抛异常（防止误用）
+      strict: false
+      datasource:
+        # H2 主数据源
+        # H2 文件模式 + MySQL 兼容模式
+        # - MODE=MySQL：兼容 MySQL 方言（反引号、AUTO_INCREMENT、UNIQUE KEY 等）
+        # - DATABASE_TO_LOWER=TRUE：标识符转小写（与 MySQL 行为对齐）
+        # - CASE_INSENSITIVE_IDENTIFIERS=TRUE：标识符大小写不敏感
+        # - AUTO_SERVER=TRUE：允许多进程访问（IDE 重启时不锁文件）
+        # 数据库文件路径：{data-root}/db/webadmin（由 DataRootConfig 初始化目录）
+        primary:
+          url: jdbc:h2:file:${web.data-root}/db/webadmin;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;AUTO_SERVER=TRUE
+          driver-class-name: org.h2.Driver
+          username: sa
+          password:
+
+      # Druid 监控配置（连接池 + 监控页）
+      druid:
+        # 连接池调优（dev 默认即可）
+        validation-query: select 1
+        # 监控页 Servlet（访问 http://localhost:8000/druid/index.html）
+        # 账号：admin / admin（仅 dev profile）
+        stat-view-servlet:
+          enabled: true
+          login-username: admin
+          login-password: admin
+          allow:
+        # Web 监控 Filter（统计 URL / SQL）
+        web-stat-filter:
+          enabled: true
+
+  # dev 环境无 Redis：排除 Redis 自动配置，避免健康检查失败和启动警告
+  autoconfigure:
+    exclude:
+      # dev 环境无 Redis：排除 Redis 自动配置
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+  # H2 Console（开发调试用，访问 http://localhost:8000/h2-console）
+  # JDBC URL 填：jdbc:h2:file:./data/db/webadmin;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        # 允许远程访问（本机访问用 localhost 即可，无需开启）
+        # ⚠️ 仅 dev profile 使用，prod profile 已禁用 H2 Console
+        # 适用场景：后端部署在远程机器 / WSL / Docker，需要从本机浏览器访问
+        web-allow-others: true
+
+# 数据根目录（本地开发，可通过环境变量 DATA_ROOT 覆盖，由 scripts/start-api.mjs 在启动时注入）
+# 默认值保持中立于具体机器（无 DATA_ROOT 环境变量时回退 H 盘兜底）
+web:
+  data-root: ${DATA_ROOT:H:/data_space/webadminData}
+
+# 笔记文件系统根目录
+# ⚠️ 必须用绝对路径：相对路径（如 ./data/notes）会跟随后端进程的启动目录解析，
+# 若从项目根目录而非 src/backend 启动，会指向一个空目录，导致已有笔记"消失"（数据仍在原目录）
+# 默认跟随 DATA_ROOT 在数据根目录下开 notes 文件夹存放；可用环境变量 NOTES_ROOT 独立覆盖
+notes:
+  root: ${NOTES_ROOT:${web.data-root}/notes}
+
+# 目标详情文件系统根目录（M4.1：OBJECTIVES_ROOT/agent-{id}/objective-{oid}.md）
+objectives:
+  root: ${OBJECTIVES_ROOT:${web.data-root}/objectives}
+
+# 台账长正文文件系统根目录（M4.2：LEDGER_ROOT/agent-{id}/ledger-{lid}.md，>500 字才落文件）
+ledger:
+  root: ${LEDGER_ROOT:${web.data-root}/ledger}

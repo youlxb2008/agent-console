@@ -1,0 +1,135 @@
+services:
+  backend:
+    # 镜像名可配：多环境共存时按环境区分（验收=agent-console-backend-st），
+    # 避免 staging 部署覆盖 dev 环境的同名镜像标签
+    image: ${AGC_IMAGE_NAME:-agent-console-backend:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: ${AGC_BACKEND_CONTAINER:-agc-backend}
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: "1.5"
+    environment:
+      # 2026-08-28 M1.5 修正：后端实际读 DB_URL/DB_USER/DB_PASSWORD/REDIS_*
+      # （application-prod.yml），且必须激活 prod profile（默认 dev=H2）
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:mysql://${AGC_MYSQL_HOST}:${AGC_MYSQL_PORT}/${AGC_MYSQL_DB}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
+      DB_USER: ${AGC_MYSQL_USER}
+      DB_PASSWORD: ${AGC_MYSQL_PASSWORD}
+      REDIS_HOST: ${AGC_REDIS_HOST}
+      REDIS_PORT: ${AGC_REDIS_PORT}
+      REDIS_PASSWORD: ${AGC_REDIS_PASSWORD}
+      # Redis db 编号（多环境共用实例按 db 隔离，验收环境用 1）
+      REDIS_DATABASE: ${AGC_REDIS_DATABASE:-0}
+      # Redis key 统一前缀（如 agc:dev: / agc:staging: / agc:prod:，留空不加前缀）
+      REDIS_KEY_PREFIX: ${AGC_REDIS_KEY_PREFIX:-}
+      # M2.0e new: notes fs root
+      NOTES_ROOT: /data/notes
+      # M4.1 new: objectives fs root
+      OBJECTIVES_ROOT: /data/objectives
+      # M4.2 new: ledger fs root（台账长正文 >500 字落文件）
+      LEDGER_ROOT: /data/ledger
+      # M5.1-R1 new: MinIO 上传存储（凭据来自部署机 .env，三环境共用桶；path-prefix 按环境 dev=x7k/staging=m2p/prod=a9b）
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET:-agent-console-attachment}
+      MINIO_PATH_PREFIX: ${MINIO_PATH_PREFIX}
+      TZ: Asia/Shanghai
+      # bus-m1 消息总线目标路由透传（值由部署机 .env 注入，格式 BUS_TARGET_{n}=toId|wsUrl|secret|models=；
+      # 空默认=未配置的路由不进容器，BusRouteConfig 自然跳过；M2 扩路由只在 .env 追加行，无需改本文件）
+      BUS_TARGET_1: ${BUS_TARGET_1:-}
+      BUS_TARGET_2: ${BUS_TARGET_2:-}
+      BUS_TARGET_3: ${BUS_TARGET_3:-}
+      BUS_TARGET_4: ${BUS_TARGET_4:-}
+      # bus-watchdog-fuse 三件套 env 透传（值由部署机 .env 注入；空默认=代码内置缺省：
+      # 默认时限 30 分钟 / 告警落点未配置=仅落表 warn / 守卫白名单默认 agent id=1）
+      BUS_FUSE_DEFAULT_MINUTES: ${BUS_FUSE_DEFAULT_MINUTES:-}
+      BUS_ALERT_SESSION: ${BUS_ALERT_SESSION:-}
+      BUS_TRUSTED_AGENTS: ${BUS_TRUSTED_AGENTS:-}
+      # bus-route-channel api 通道目标透传（值由部署机 .env 注入，格式 BUS_API_TARGET_{n}=agentId|baseUrl|apiKey；
+      # n=1..8；空默认=未配置的目标 api 不可用，投递时自动降级 ws；改目标只在 .env 追加行，无需改本文件）
+      BUS_API_TARGET_1: ${BUS_API_TARGET_1:-}
+      BUS_API_TARGET_2: ${BUS_API_TARGET_2:-}
+      BUS_API_TARGET_3: ${BUS_API_TARGET_3:-}
+      BUS_API_TARGET_4: ${BUS_API_TARGET_4:-}
+      BUS_API_TARGET_5: ${BUS_API_TARGET_5:-}
+      BUS_API_TARGET_6: ${BUS_API_TARGET_6:-}
+      BUS_API_TARGET_7: ${BUS_API_TARGET_7:-}
+      BUS_API_TARGET_8: ${BUS_API_TARGET_8:-}
+    expose:
+      - "8000"
+    volumes:
+      # 单一上层目录卷：notes/objectives/ledger 等数据全部落在 /data 下
+      - ./data:/data
+
+  nginx:
+    image: nginx:1.31-alpine
+    container_name: ${AGC_NGINX_CONTAINER:-agc-nginx}
+    restart: unless-stopped
+    mem_limit: 256m
+    ports:
+      # 宿主端口可配：dev=36610 联调 / staging=36611 验收
+      - "${AGC_PORT:-36610}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./dist/portal:/usr/share/nginx/html/portal:ro
+      - ./dist/frontend:/usr/share/nginx/html/admin:ro
+    depends_on:
+      - backend
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # bundled profile：一键全栈（自带 MySQL 8.0 + Redis 7）
+  #   默认（.env 不带 COMPOSE_PROFILES）不会创建本节容器，up 行为与旧版完全一致；
+  #   bundled 用法见 deploy/README.md「部署步骤」。
+  # ⚠️ 禁止给 backend/nginx 加对本节服务的 depends_on：depends_on 会反向自动激活
+  #   被依赖服务的 profile，external 模式会被迫拉起 bundled 容器。backend 就绪
+  #   不靠编排等待，靠自身 restart: unless-stopped：MySQL 首启先跑
+  #   entrypoint-initdb 灌库脚本再接受连接，首次启动 backend 可能自动重启
+  #   1-2 次等库就绪，属正常现象（详见 deploy/README.md）。
+  # ═══════════════════════════════════════════════════════════════════════
+  mysql:
+    image: mysql:8.0
+    container_name: ${AGC_MYSQL_CONTAINER:-agc-mysql}
+    profiles: ["bundled"]
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: "1.0"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+    environment:
+      # root 密码仅 bundled 首启建库用（.env 必填；不设置时 mysql 容器首启会报错退出）
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-}
+      # 建库名与应用账号密码直接取 AGC_MYSQL_*（与 backend 连接信息同源，无需重复配置）
+      MYSQL_DATABASE: ${AGC_MYSQL_DB:-agent-console}
+      MYSQL_USER: ${AGC_MYSQL_USER:-agent-console}
+      MYSQL_PASSWORD: ${AGC_MYSQL_PASSWORD:-}
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # 首启自动灌库：入口脚本 + SQL 逐个只读挂载（顺序红线见 01-init.sh 头注释）；
+      # entrypoint-initdb 只在空数据卷首次启动时执行，天然幂等
+      - ./compose-init/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh:ro
+      - ../src/backend/src/main/resources/schema.sql:/opt/agc-sql/01-schema.sql:ro
+      - ../src/backend/src/main/resources/data.sql:/opt/agc-sql/02-data.sql:ro
+      - ../src/backend/src/main/resources/db/mysql/agent-domain.sql:/opt/agc-sql/03-agent-domain.sql:ro
+      - ./sql/m13-menu.sql:/opt/agc-sql/04-m13-menu.sql:ro
+      - ./sql/m2-menu.sql:/opt/agc-sql/05-m2-menu.sql:ro
+      - ./sql/m35-menu.sql:/opt/agc-sql/06-m35-menu.sql:ro
+      - ./sql/m4-menu.sql:/opt/agc-sql/07-m4-menu.sql:ro
+      - ./sql/m71-menu.sql:/opt/agc-sql/08-m71-menu.sql:ro
+
+  redis:
+    image: redis:7-alpine
+    container_name: ${AGC_REDIS_CONTAINER:-agc-redis}
+    profiles: ["bundled"]
+    restart: unless-stopped
+    mem_limit: 256m
+    # requirepass 取 AGC_REDIS_PASSWORD；留空=不设密码（列表形式保证空值不丢位）。
+    # 自带 redis 只在 compose 内网可达，不发布宿主端口。
+    command: ["redis-server", "--requirepass", "${AGC_REDIS_PASSWORD:-}"]
+
+volumes:
+  mysql-data:

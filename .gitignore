@@ -1,0 +1,55 @@
+# ===== 依赖目录 =====
+node_modules/
+**/node_modules/
+
+# ===== 构建产物 =====
+dist/
+**/dist/
+*.tsbuildinfo
+target/
+**/target/
+
+# ===== 本地环境文件（共享的 .env.development/.env.production 仍纳入版本管理） =====
+*.local
+.env.local
+.env.*.local
+
+# ===== 日志 =====
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===== 编辑器/IDE =====
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# Eclipse / Spring Tool Suite
+.classpath
+.factorypath
+.project
+.settings/
+
+# ===== 操作系统 =====
+.DS_Store
+Thumbs.db
+
+# ===== 缓存 =====
+.cache/
+.temp/
+.eslintcache
+
+# ===== 自动生成的类型声明 =====
+src/frontend/src/auto-imports.d.ts
+src/frontend/src/components.d.ts
+
+# ===== H2 残留数据库（历史 jdbc:h2:file 配置产生的测试产物） =====
+P:/
